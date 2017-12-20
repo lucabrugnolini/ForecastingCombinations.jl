@@ -1,4 +1,4 @@
-module NFPs
+module NFP
 using GLM, StatsBase, DataFrames,MultivariateStats
 using Combinatorics, Parameters, DataFramesMeta, Lazy, Plots
 
@@ -332,46 +332,6 @@ function fforecast(dfData::DataFrame,vSymbol::Vector{Symbol},iSymbol::Symbol,H::
     return U,best_comb_vMae,factor_in_vMae,best_comb_vRmse,factor_in_vRmse,l_plot
 end
 
+export sforecast, fforecast
+
 end # module ends 
-
-# type results
-#     U::UnivariateSelection
-#     best_comb_vMae::
-#     factor_in_vMae
-#     best_comb_vRmse
-#     factor_in_vRmse
-#     l_plot
-# end
-
-### Run the Exercise
-
-
-using NFPs
-const sStart_s = "01/01/15" # start out of sample
-const iSymbol = :NFP # dependent variable
-const vSymbol = [:Date, :NFP, :NFP_bb_median] # remove from dataset (non-numerical and dep. var.)
-const H = [1,2] # horizons
-const iBest = 16 # Check the best x variables among the two criteria
-const ncomb_load = 20
-const iProcs = 3
-
-dfData = readtable(joinpath(Pkg.dir("NFP"),"test","data.csv"), header = true)
-const iStart = find(dfData[:Date] .== sStart_s)[1]
-
-sforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load,iProcs)
-
-
-
-
-######################################################################################
-############################ Out-of-sample 
-#####################################################################################
-# Setting up the model:
-
-
-
-
-plot(l_plot)
-
-
-joinpath(Pkg.dir("NFP"),"test","StockWatsonData.csv")
