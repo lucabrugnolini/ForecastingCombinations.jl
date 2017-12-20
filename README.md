@@ -2,20 +2,18 @@
 Forecasting Variables using a combinatoric approach and exploiting parallel computing in Julia.
 
 ## Installation
-```
+```julia
 Pkg.clone("https://github.com/lucabrugnolini/NFP.jl")
 ```
 
 ## Note
 The package exploits all the variables contained in a balanced dataset. In a first step, the procedure selects the best n-variables using two different criteria (mean absolute error and root mean squared error). 
 
-In the second step, it the code uses all the possible combination of the selected variables and chooses the best available model according to the two criteria. 
-
-<a href="https://www.codecogs.com/eqnedit.php?latex=\mathcal{C}&space;=&space;2^K" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\mathcal{C}&space;=&space;2^K" title="\mathcal{C} = 2^K" /></a>
+In the second step, it the code uses all the possible combination of the selected variables and chooses the best available model according to the two criteria. The total number of combinations are <a href="https://www.codecogs.com/eqnedit.php?latex=\mathcal{C}&space;=&space;2^K" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\mathcal{C}&space;=&space;2^K" title="\mathcal{C} = 2^K" /></a>, where `K` is the number of variable selected in the first step of the process.
 
 ## Example
 Forecasting US non-farm-payroll one and two months ahead.
-```
+```julia
 addprocs(3)
 @everywhere using NFP, DataFrames
 @everywhere const sStart_s = "01/01/15" # start out of sample
