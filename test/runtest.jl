@@ -13,4 +13,7 @@ addprocs(3)
 l_plot,r = sforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load)
 l_plot,r= fforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load)
 
+# See the forecasts
+l_plot
+
 rmprocs(2:4)
