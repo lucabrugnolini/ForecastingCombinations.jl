@@ -202,6 +202,7 @@ end
 
 function load_score(sCrit::String,ncomb_load::Int64,H::Vector,vNames::Vector{String})
     (sCrit != "vMae" && sCrit != "vRmse") && error("sCrit must be vMae or vRmse")
+    ncomb = size(vNames,1)
     vCrit = H
     comb_identifier = "Models" # preallocate comb_identifier for concatenation
     for comb = 1:ncomb_load
