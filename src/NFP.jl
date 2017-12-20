@@ -230,7 +230,7 @@ function variable_selection(dfData::DataFrame,vSymbol::Vector{Symbol},iSymbol::S
     return mX,vY,U,vNames
 end
 
-function sforecast(dfData::DataFrame,vSymbol::Vector{Symbol},iSymbol::Symbol,H::Vector,iStart::String,iBest::Int64,ncomb_load::Int64,iProcs::Int64)
+function sforecast(dfData::DataFrame,vSymbol::::Array{Symbol,1},iSymbol::Symbol,H::Vector,iStart::Int64,iBest::Int64,ncomb_load::Int64,iProcs::Int64)
     addprocs(iProcs)
     l_plot = plot(layout = grid(length(H),1))
     rm_var = size(vSymbol,1)
@@ -280,7 +280,7 @@ function sforecast(dfData::DataFrame,vSymbol::Vector{Symbol},iSymbol::Symbol,H::
     return U,best_comb_vMae,factor_in_vMae,best_comb_vRmse,factor_in_vRmse,l_plot    
 end
 
-function fforecast(dfData::DataFrame,vSymbol::Vector{Symbol},iSymbol::Symbol,H::Vector,iStart::String,iBest::Int64,ncomb_load::Int64,iProcs::Int64)
+function fforecast(dfData::DataFrame,vSymbol::::Array{Symbol,1},iSymbol::Symbol,H::Vector,iStart::Int64,iBest::Int64,ncomb_load::Int64,iProcs::Int64)
     l_plot = plot(layout = grid(length(H),1))
     rm_var = size(vSymbol,1)
     
