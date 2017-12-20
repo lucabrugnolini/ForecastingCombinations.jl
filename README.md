@@ -5,6 +5,10 @@ Forecasting Variables using a combinatoric approach and exploiting parallel comp
 ```julia
 Pkg.clone("https://github.com/lucabrugnolini/NFP.jl")
 ```
+The package requires the following packages installed: GLM, StatsBase, DataFrames, MultivariateStats, Combinatorics, Parameters, DataFramesMeta, Lazy, Plots
+
+This can be done via: `Pkg.add("name_of_the_package")`
+
 
 ## Note
 The package exploits all the variables contained in a balanced dataset. In a first step, the procedure selects the best n-variables using two different criteria (mean absolute error and root mean squared error). 
@@ -27,8 +31,16 @@ addprocs(3)
 @everywhere dfData = readtable(joinpath(Pkg.dir("NFP"),"test","data.csv"), header = true)
 @everywhere const iStart = find(dfData[:Date] .== sStart_s)[1]
 
-l_plot = sforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load)
+l_plot,r = sforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load)
+l_plot,r = fforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load)
+
+# Plot the forecasts
+l_plot
 
 rmprocs(2:4)
 
 ```
+
+There are two primary functions:
+1. `sforecast` which computes the two steps variable selection
+2. `fforecast` which uses results previously stored (to run after running at least ones `sforecast`)
