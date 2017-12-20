@@ -1,8 +1,10 @@
 # NFP.jl
 Forecasting Variables using a combinatoric approach and exploiting parallel computing in Julia.
 
-## Install
+## Installation
+```
 Pkg.clone("https://github.com/lucabrugnolini/NFP.jl")
+```
 
 ## Note
 The package exploits all the variables contained in a balanced dataset. In a first step, the procedure selects the best n-variables using two different criteria (mean absolute error and root mean squared error). 
