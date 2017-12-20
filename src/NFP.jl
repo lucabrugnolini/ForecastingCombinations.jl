@@ -235,8 +235,8 @@ function sforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
     rm_var = size(vSymbol,1)
     
     mX,vY,U,vNames = variable_selection(dfData,vSymbol,iSymbol,H,iStart,iBest)
-    best_comb_vMae,factor_in_vMae = load_score("vMae",ncomb_load,H,vNames)
-    best_comb_vRmse,factor_in_vRmse = load_score("vRmse",ncomb_load,H,vNames)
+    best_comb_vMae,factor_in_vMae = load_score("vMae",ncomb_load,H,U.vNames)
+    best_comb_vRmse,factor_in_vRmse = load_score("vRmse",ncomb_load,H,U.vNames)
     
     line_st = Dict(best_comb_vMae => (:solid,"green",2), best_comb_vRmse => (:dash, "red",2))
     counter = 0
@@ -287,8 +287,8 @@ function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
     vY = convert(Array,dfData[iSymbol])
     U = UnivariateSelection(mX,vY,vNames,H,iStart,iBest)
     
-    best_comb_vMae,factor_in_vMae = load_score("vMae",ncomb_load,H,vNames)
-    best_comb_vRmse,factor_in_vRmse = load_score("vRmse",ncomb_load,H,vNames)
+    best_comb_vMae,factor_in_vMae = load_score("vMae",ncomb_load,H,U.vNames)
+    best_comb_vRmse,factor_in_vRmse = load_score("vRmse",ncomb_load,H,U.vNames)
     
     line_st = Dict(best_comb_vMae => (:solid,"green",2), best_comb_vRmse => (:dash, "red",2))
     counter = 0
