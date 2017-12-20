@@ -1,4 +1,4 @@
-using NFP
+using NFP, DataFrames
 const sStart_s = "01/01/15" # start out of sample
 const iSymbol = :NFP # dependent variable
 const vSymbol = [:Date, :NFP, :NFP_bb_median] # remove from dataset (non-numerical and dep. var.)
