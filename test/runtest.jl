@@ -10,7 +10,7 @@ addprocs(3)
 @everywhere dfData = readtable(joinpath(Pkg.dir("NFP"),"test","data.csv"), header = true)
 @everywhere const iStart = find(dfData[:Date] .== sStart_s)[1]
 
-sforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load)
-fforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load)
+l_plot = sforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load)
+l_plot = fforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load)
 
 rmprocs(2:4)

@@ -277,7 +277,7 @@ function sforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
             title = "Horizon $h", subplot = count, legend = false, ylabel = string(iSymbol))
         end
     end
-    return U,best_comb_vMae,factor_in_vMae,best_comb_vRmse,factor_in_vRmse,l_plot    
+    return l_plot,U,best_comb_vMae,factor_in_vMae,best_comb_vRmse,factor_in_vRmse    
 end
 
 function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H::Vector,iStart::Int64,iBest::Int64,ncomb_load::Int64)
@@ -329,7 +329,7 @@ function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
             title = "Horizon $h", subplot = count, legend = false, ylabel = string(iSymbol))
         end
     end
-    return U,best_comb_vMae,factor_in_vMae,best_comb_vRmse,factor_in_vRmse,l_plot
+    return l_plot,U,best_comb_vMae,factor_in_vMae,best_comb_vRmse,factor_in_vRmse
 end
 
 export sforecast, fforecast
