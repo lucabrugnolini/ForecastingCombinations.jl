@@ -99,7 +99,7 @@ function get_best(mX::Array,mY::Array,iBest::Int64)
     vBest = sort(unique([unique(mX); unique(mY)]))
 end
 
-function par_get_best_comb(mX::Array,vY::Vector,H::Vector{Int64},U::UnivariateSelection)
+function par_get_best_comb(mX::Array,vY::Vector,H::Vector{Int64},U::UnivariateSelection,iStart::Int64)
     T,K = size(mX)::Tuple{Int64,Int64}
     P = size(H,1)
     N = size(U.vVar,1)
@@ -226,7 +226,7 @@ function variable_selection(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::
     U = UnivariateSelection(mX,vY,vNames,H,iStart,iBest)
     const ncomb = size(U.vVar,1)
     # sPath folder is the folder where the results are saved and has to be created
-    par_get_best_comb(mX,vY,H,U)
+    par_get_best_comb(mX,vY,H,U,iStart)
     return mX,vY,U,vNames
 end
 
