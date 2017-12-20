@@ -68,7 +68,7 @@ function get_score(mX::Array{Float64,2},vY::Vector,H::Vector{Int64},iStart::Int6
     return mFore,mMae, mRmse
 end
 
-@everywhere function out_of_sample_forecast(mX::Array{Float64,2},vY::Vector,iStart::Int64,h::Int64)
+function out_of_sample_forecast(mX::Array{Float64,2},vY::Vector,iStart::Int64,h::Int64)
     T,K = size(mX)::Tuple{Int64,Int64}
     vFore = zeros(T)
     for j = iStart:T-h
@@ -84,8 +84,8 @@ end
     return vFore
 end
 
-@everywhere mae(vX::Vector,vY::Vector) = mean(abs.(vX-vY))
-@everywhere rmse(vX::Vector,vY::Array) = sqrt(mean((vX-vY).^2))
+mae(vX::Vector,vY::Vector) = mean(abs.(vX-vY))
+rmse(vX::Vector,vY::Array) = sqrt(mean((vX-vY).^2))
 
 function get_variable_idx(mLoss_s::Array,bRev::Bool)
     mLoss = zeros(Int64, size(mLoss_s))
@@ -144,7 +144,7 @@ function get_comb(vVar::Vector{Int64},comb::Int64)
     return vVar[vComb_idx]::Array{Int64}
 end
 
-@everywhere function out_of_sample_forecast_pca(mX::Array{Float64,2},vY::Vector,iStart::Int64,h::Int64,vVar_idx::Vector{Int64},rPC_idx::UnitRange{Int64})
+function out_of_sample_forecast_pca(mX::Array{Float64,2},vY::Vector,iStart::Int64,h::Int64,vVar_idx::Vector{Int64},rPC_idx::UnitRange{Int64})
     T,k = size(mX)::Tuple{Int64,Int64}
     K = size(vVar_idx,1)
     vFore = zeros(T)
@@ -162,7 +162,7 @@ end
     return vFore
 end
 
-@everywhere function pca(data::Array{Float64}; n::Int64 = 1)
+function pca(data::Array{Float64}; n::Int64 = 1)
     # Need MultivariateStats
     mX = data.-mean(data,1)
     M = fit(PCA, mX, method = :cov)
@@ -220,7 +220,7 @@ function load_score(sCrit::String,ncomb_load::Int64,H::Vector,vNames::Vector{Str
     return best_comb, factor_in
 end
 
-function variable_selection(dfData::DataFrame,vSymbol::Vector{Symbol},iSymbol::Symbol,H::Vector,iStart::String,iBest::Int64)
+function variable_selection(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H::Vector,iStart::Int64,iBest::Int64)
     mX,vNames = get_independent(dfData,vSymbol)
     vY = convert(Array,dfData[iSymbol])
     U = UnivariateSelection(mX,vY,vNames,H,iStart,iBest)
@@ -230,8 +230,7 @@ function variable_selection(dfData::DataFrame,vSymbol::Vector{Symbol},iSymbol::S
     return mX,vY,U,vNames
 end
 
-function sforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H::Vector,iStart::Int64,iBest::Int64,ncomb_load::Int64,iProcs::Int64)
-    addprocs(iProcs)
+function sforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H::Vector,iStart::Int64,iBest::Int64,ncomb_load::Int64)
     l_plot = plot(layout = grid(length(H),1))
     rm_var = size(vSymbol,1)
     
