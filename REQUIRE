@@ -1,0 +1,10 @@
+Julia 0.6
+GLM
+StatsBase 
+DataFrames
+MultivariateStats
+Combinatorics
+Parameters 
+DataFramesMeta 
+Lazy 
+Plots
