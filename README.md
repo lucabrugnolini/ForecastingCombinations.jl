@@ -23,15 +23,16 @@ Forecasting US non-farm-payroll one and two months ahead `H = [1,2]` using a dat
 ```julia
 addprocs(N_CORE)
 @everywhere using NFP, DataFrames
-@everywhere const sStart_s = "01/01/15" # start out of sample
-@everywhere const iSymbol = :NFP # dependent variable
-@everywhere const vSymbol = [:Date, :NFP, :NFP_bb_median] # remove from dataset (non-numerical and dep. var.)
-@everywhere const H = [1,2] # horizons
-@everywhere const iBest = 16 # Check the best x variables among the two criteria
-@everywhere const ncomb_load = 20 # max comb to use for the forecast
+@everywhere const sStart_s = "01/01/15"                   ## This is the beginning of the out-of-sample window
+@everywhere const iSymbol = :NFP                          ## Target variable
+@everywhere const vSymbol = [:Date, :NFP, :NFP_bb_median] ## Variables to be removed from the dataset (non-numerical and dep. var.)
+@everywhere const H = [1,2]                               ## Out-of-sample horizon
+@everywhere const iBest = 16                              ## iBest
+@everywhere const ncomb_load = iBest                      ## TODO: remove this option
 
 @everywhere dfData = readtable(joinpath(Pkg.dir("NFP"),"test","data.csv"), header = true)
 @everywhere const iStart = find(dfData[:Date] .== sStart_s)[1]
+
 
 l_plot,r = sforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load)
 l_plot,r = fforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load)
@@ -39,7 +40,8 @@ l_plot,r = fforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load)
 # Plot the forecasts
 l_plot
 
-rmprocs(2:4)
+## Remove process added
+rmprocs(2:N_CORE)
 
 ```
 
