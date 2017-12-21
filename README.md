@@ -1,25 +1,27 @@
 # NFP.jl
-Forecasting Variables using a combinatoric approach and exploiting parallel computing in Julia.
+Forecasting using a parallel combinatoric approach.
 
 ## Installation
 ```julia
 Pkg.clone("https://github.com/lucabrugnolini/NFP.jl")
 ```
-The package requires the following packages installed: GLM, StatsBase, DataFrames, MultivariateStats, Combinatorics, Parameters, DataFramesMeta, Lazy, Plots
-
-This can be done via: `Pkg.add("name_of_the_package")`
 
 
 ## Introduction
-The package exploits all the variables contained in a balanced dataset. In a first step, the procedure selects the best n-variables using two different criteria (mean absolute error and root mean squared error). 
+Given a (balaanced) dataset of _K_ macroeconomic variables, the objective is to select the best model to predict future values of a target variable. The selection procedure consists in (i) select the best _iBest_ variables according to several out-of-sample criteria and then use these variables in models that use their combination. More specifically:
 
-In the second step, it the code uses all the possible combination of the selected variables and chooses the best available model according to the two criteria. The total number of combinations are <a href="https://www.codecogs.com/eqnedit.php?latex=\mathcal{C}&space;=&space;2^K" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\mathcal{C}&space;=&space;2^K" title="\mathcal{C} = 2^K" /></a>, where <a href="https://www.codecogs.com/eqnedit.php?latex=K" target="_blank"><img src="https://latex.codecogs.com/gif.latex?K" title="K" /></a> is the number of variable selected in the first step of the process. Also, for each model an augmented counterpart is estimated adding the first principal component of the entire dataset. The total number of estimated model are <a href="https://www.codecogs.com/eqnedit.php?latex=\bar{C}&space;=&space;(2H(T-T^s))2^K" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\bar{C}&space;=&space;(2H(T-T^s))2^K" title="\bar{C} = (2H(T-T^s))2^K" /></a>, where <a href="https://www.codecogs.com/eqnedit.php?latex=H" target="_blank"><img src="https://latex.codecogs.com/gif.latex?H" title="H" /></a> is the horizons and <a href="https://www.codecogs.com/eqnedit.php?latex=T^s" target="_blank"><img src="https://latex.codecogs.com/gif.latex?T^s" title="T^s" /></a> is the pre-estimation sample.
+1. the procedure selects the best `iBest` variables using two different criteria (mean absolute error and root mean squared error). This selection step is univariate, i.e. the variables are chosen by running a simple regression of the target variable on each variable of the dataset. 
+
+2. the `iBest` variables are combined into set _2, 3, ..., iBest_. For each of these sets, the model is estimated and then avaluated out-of-sample. The best model is the one with the lowest out-of-sample `MSE`. We also augment each model with the first principal component of all variable in the dataset. Thus, there are a total of _2 (2^iBest)_ models. 
+
+The complexity is _O((T-Ts)*2^iBest)_ where _T_ is the sample size, _Ts_ is the number of observation in the initial estimation window. 
 
 ## Example
-Forecasting US non-farm-payroll one and two months ahead `H = [1,2]` using a dataset which comprises around 100 US variables from McCracke and Ng (2015). The code selects the best 16 variables `iBest` in an out-of-sample forcast starting in January 2015 according to the MAE and RMSE. Then, it exploit a quad-core processor to select the best model among all the possible combinations (<a href="https://www.codecogs.com/eqnedit.php?latex=K=20" target="_blank"><img src="https://latex.codecogs.com/gif.latex?K=20" title="K=20" /></a>). 
+Forecasting US non-farm-payroll one and two months ahead `H = [1,2]` using a dataset has 100 US variables and are taken from McCracke and Ng (2015). `iBest` is set to 16. The code below is an example of parallelization on `N_CORE`. 
+
 
 ```julia
-addprocs(3)
+addprocs(N_CORE)
 @everywhere using NFP, DataFrames
 @everywhere const sStart_s = "01/01/15" # start out of sample
 @everywhere const iSymbol = :NFP # dependent variable
