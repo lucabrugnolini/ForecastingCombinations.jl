@@ -17,7 +17,7 @@ Given a (balaanced) dataset of _K_ macroeconomic variables, the objective is to 
 The complexity is _O((T-Ts)*2^iBest)_ where _T_ is the sample size, _Ts_ is the number of observation in the initial estimation window. 
 
 ## Example
-Forecasting US non-farm-payroll one and two months ahead `H = [1,2]` using a dataset has 100 US variables and are taken from McCracken and Ng (2015). `iBest` is set to 16. The code below is an example of parallelization on `N_CORE`. 
+Forecasting US non-farm-payroll one and two months ahead `H = [1,2]` using a dataset containing 116 US variables taken from McCracken and Ng (2015). `iBest` is set to 16. The code below is an example of parallelization on `N_CORE`. 
 
 
 ```julia
