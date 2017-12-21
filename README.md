@@ -12,7 +12,7 @@ Given a (balaanced) dataset of _K_ macroeconomic variables, the objective is to 
 
 1. the procedure selects the best `iBest` variables using two different criteria (mean absolute error and root mean squared error). This selection step is univariate, i.e. the variables are chosen by running a simple regression of the target variable on each variable of the dataset. 
 
-2. the `iBest` variables are combined into set _2, 3, ..., iBest_. For each of these sets, the model is estimated and then avaluated out-of-sample. The best model is the one with the lowest out-of-sample `MSE`. We also augment each model with the first principal component of all variable in the dataset. Thus, there are a total of _2 (2^iBest)_ models. 
+2. the `iBest` variables are combined into set of _2, 3, ..., iBest_ variables. For each of these sets, the model is estimated and then avaluated out-of-sample. The best model is the one with the lowest out-of-sample `MSE`. We also augment each model with the first principal component of all variable in the dataset. Thus, there are a total of _2 (2^iBest)_ models. 
 
 The complexity is _O((T-Ts)*2^iBest)_ where _T_ is the sample size, _Ts_ is the number of observation in the initial estimation window. 
 
