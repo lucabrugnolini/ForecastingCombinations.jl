@@ -177,7 +177,7 @@ function get_df_score(m::DenseArray,n::Int64)
 end
 
 function get_independent(dfData::DataFrame, vVar::Vector{Symbol})
-    mX = @>> dfData[.~[(x in vVar) for x in names(dfData)]] convert(Array)
+    mX = @>> dfData[.~[(x in vVar) for x in names(dfData)]] convert(Array{Float64,2})
     vNames = @> dfData[.~[(x in vVar) for x in names(dfData)]] names()
     return mX, vNames
 end
