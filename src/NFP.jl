@@ -286,7 +286,7 @@ function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
     rm_var = size(vSymbol,1)
 
     mX,vNames = get_independent(dfData,vSymbol)
-    vY = convert(Array,dfData[iSymbol])
+    vY = convert(Array{Float64,1}, dfData[iSymbol])
     U = UnivariateSelection(mX,vY,vNames,H,iStart,iBest)
 
     best_comb_vMae,factor_in_vMae = load_score("vMae",ncomb_load,H,U.vNames)
@@ -324,9 +324,13 @@ function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
             else
                 @inbounds mFore[:,count] = out_of_sample_forecast(mX[:,model_index[i]],vY,iStart,h)
             end
-            best_comb == best_comb_vMae && plot!(l_plot,dfData[:Date][iStart+h:end],vY[iStart+h:end], color = "black",
-            subplot = count)
-            plot!(l_plot,dfData[:Date][iStart+h:end],mFore[iStart+h:end,count], line = (line_st[best_comb]),
+            dta = convert(Array{String, 1}, dfData[:Date][iStart+h:end])
+            best_comb == best_comb_vMae && plot!(l_plot, dta,
+                                                 vY[iStart+h:end],
+                                                 color = "black",
+                                                 subplot = count)
+
+            plot!(l_plot, dta, mFore[iStart+h:end,count], line = (line_st[best_comb]),
             title = "Horizon $h", subplot = count, legend = false, ylabel = string(iSymbol))
         end
     end
