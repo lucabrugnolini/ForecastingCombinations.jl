@@ -30,15 +30,15 @@ function UnivariateSelection(mX::Array,vY::Vector,vNames,H::Vector{Int64},iStart
     mFore,mMae,mRmse = get_score(mX,vY,H,iStart)
     mMAE  = get_variable_idx(mMae::Array,false)
     mRMSE = get_variable_idx(mRmse::Array,false)
-    
+
     mMAE_b = Loss(mMAE,mMae,iBest,vNames)
     mRMSE_b = Loss(mRMSE,mRmse,iBest,vNames)
-    
+
     s = Score(mMAE_b,mRMSE_b)
-    
+
     vBest = get_best(mMAE_b.mVar,mRMSE_b.mVar,iBest)
     vBest_names = vNames[vBest]
-    
+
     return UnivariateSelection(vBest,vBest_names,s)
 end
 
@@ -104,7 +104,7 @@ function par_get_best_comb(mX::Array,vY::Vector,H::Vector{Int64},U::UnivariateSe
     P = size(H,1)
     N = size(U.vVar,1)
     counter = 0
-    for comb = 1:size(U.vVar,1) 
+    for comb = 1:size(U.vVar,1)
         println("Starting models with $comb variables")
         comb_index = get_comb(U.vVar,comb)
         n = size(comb_index,1)::Int64
@@ -223,7 +223,7 @@ end
 
 function variable_selection(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H::Vector,iStart::Int64,iBest::Int64)
     mX,vNames = get_independent(dfData,vSymbol)
-    vY = convert(Array,dfData[iSymbol])
+    vY = convert(Array{Float64, 1},dfData[iSymbol])
     U = UnivariateSelection(mX,vY,vNames,H,iStart,iBest)
     const ncomb = size(U.vVar,1)
     # sPath folder is the folder where the results are saved and has to be created
@@ -234,11 +234,11 @@ end
 function sforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H::Vector,iStart::Int64,iBest::Int64,ncomb_load::Int64)
     l_plot = plot(layout = grid(length(H),1))
     rm_var = size(vSymbol,1)
-    
+
     mX,vY,U,vNames = variable_selection(dfData,vSymbol,iSymbol,H,iStart,iBest)
     best_comb_vMae,factor_in_vMae = load_score("vMae",ncomb_load,H,U.vNames)
     best_comb_vRmse,factor_in_vRmse = load_score("vRmse",ncomb_load,H,U.vNames)
-    
+
     line_st = Dict(best_comb_vMae => (:solid,"green",2), best_comb_vRmse => (:dash, "red",2))
     counter = 0
     for best_comb = (best_comb_vMae, best_comb_vRmse)
@@ -271,9 +271,9 @@ function sforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
             else
                 @inbounds mFore[:,count] = out_of_sample_forecast(mX[:,model_index[i]],vY,iStart,h)
             end
-            best_comb == best_comb_vMae && plot!(l_plot,dfData[:Date][iStart+h:end],vY[iStart+h:end], color = "black", 
-            subplot = count)
-            plot!(l_plot,dfData[:Date][iStart+h:end],mFore[iStart+h:end,count], line = (line_st[best_comb]), 
+            dta = convert(Array{String, 1}, dfData[:Date][iStart+h:end])
+            best_comb == best_comb_vMae && plot!(l_plot, dta, vY[iStart+h:end], color = "black", subplot = count)
+            plot!(l_plot, dta, mFore[iStart+h:end,count], line = (line_st[best_comb]),
             title = "Horizon $h", subplot = count, legend = false, ylabel = string(iSymbol))
         end
     end
@@ -284,14 +284,14 @@ end
 function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H::Vector,iStart::Int64,iBest::Int64,ncomb_load::Int64)
     l_plot = plot(layout = grid(length(H),1))
     rm_var = size(vSymbol,1)
-    
+
     mX,vNames = get_independent(dfData,vSymbol)
     vY = convert(Array,dfData[iSymbol])
     U = UnivariateSelection(mX,vY,vNames,H,iStart,iBest)
-    
+
     best_comb_vMae,factor_in_vMae = load_score("vMae",ncomb_load,H,U.vNames)
     best_comb_vRmse,factor_in_vRmse = load_score("vRmse",ncomb_load,H,U.vNames)
-    
+
     line_st = Dict(best_comb_vMae => (:solid,"green",2), best_comb_vRmse => (:dash, "red",2))
     counter = 0
     for best_comb = (best_comb_vMae, best_comb_vRmse)
@@ -324,9 +324,9 @@ function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
             else
                 @inbounds mFore[:,count] = out_of_sample_forecast(mX[:,model_index[i]],vY,iStart,h)
             end
-            best_comb == best_comb_vMae && plot!(l_plot,dfData[:Date][iStart+h:end],vY[iStart+h:end], color = "black", 
+            best_comb == best_comb_vMae && plot!(l_plot,dfData[:Date][iStart+h:end],vY[iStart+h:end], color = "black",
             subplot = count)
-            plot!(l_plot,dfData[:Date][iStart+h:end],mFore[iStart+h:end,count], line = (line_st[best_comb]), 
+            plot!(l_plot,dfData[:Date][iStart+h:end],mFore[iStart+h:end,count], line = (line_st[best_comb]),
             title = "Horizon $h", subplot = count, legend = false, ylabel = string(iSymbol))
         end
     end
@@ -345,4 +345,4 @@ end
 
 export sforecast, fforecast
 
-end # module ends 
+end # module ends
