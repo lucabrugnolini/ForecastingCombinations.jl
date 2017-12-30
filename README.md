@@ -34,8 +34,11 @@ addprocs(N_CORE)
 @everywhere const iStart = find(dfData[:Date] .== sStart_s)[1]
 
 
+## computes the two steps variable selection
 l_plot,r = sforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load)
+## `fforecast` uses results previously stored
 l_plot,r = fforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load)
+
 
 # Plot the forecasts
 l_plot
@@ -45,6 +48,12 @@ rmprocs(2:N_CORE)
 
 ```
 
-There are two primary functions:
-1. `sforecast` which computes the two steps variable selection
-2. `fforecast` which uses results previously stored (to run after running at least ones `sforecast`)
+
+_Note:_ Since `readtable` is deprecated in Julia v0.6, it is advisable to start julia's REPL using the --depwarn=no flag
+
+```bash
+> julia --depwarn=no
+```
+
+
+
