@@ -7,7 +7,7 @@ Pkg.clone("https://github.com/lucabrugnolini/NFP.jl")
 ```
 
 ## Documentation
-The procedure is described in (https://lucabrugnolini.github.io/publication/forecasting_inflation.pdf "Brugnolini L. (2018)")
+The procedure is described in [Brugnolini L. (2018)](https://lucabrugnolini.github.io/publication/forecasting_inflation.pdf). The application is on predicting the probability of having inflation around the European Central Bank's target.  
 
 
 ## Introduction
@@ -20,7 +20,7 @@ Given a (balanced) dataset of _K_ macroeconomic variables, the objective is to s
 The complexity is _O((T-Ts)*2^iBest)_ where _T_ is the sample size, _Ts_ is the number of observation in the initial estimation window. 
 
 ## Example
-Forecasting US non-farm-payroll one and two months ahead `H = [1,2]` using a dataset containing 116 US variables taken from (https://amstat.tandfonline.com/doi/abs/10.1080/07350015.2015.1086655 "McCracken and Ng (2015)"). `iBest` is set to 16. The code below is an example of parallelization on `N_CORE`. 
+Forecasting US non-farm-payroll one and two months ahead `H = [1,2]` using a dataset containing 116 US variables taken from [McCracken and Ng (2015)](https://amstat.tandfonline.com/doi/abs/10.1080/07350015.2015.1086655). `iBest` is set to 16. The code below is an example of parallelization on `N_CORE`. 
 
 
 ```julia
@@ -66,6 +66,7 @@ _Note:_ Since `readtable` is deprecated in Julia v0.6, it is advisable to start 
 
 ## References
 Brugnolini L. (2018) "Forecasting Deflation Probability in the EA: A Combinatoric Approach." _Central Bank of Malta Working Paper_, 01/18.
+
 McCracken, Michael W., and Serena Ng.(2016) "FRED-MD: A monthly database for macroeconomic research." Journal of Business & Economic Statistics 34.4:574-589.
 
 
