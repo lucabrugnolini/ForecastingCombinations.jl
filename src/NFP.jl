@@ -84,6 +84,22 @@ function out_of_sample_forecast(mX::Array{Float64,2},vY::Vector,iStart::Int64,h:
     return vFore
 end
 
+function out_of_sample_forecast(mX::Array{Float64,2},vY::Vector,iStart::Int64,h::Int64,l::GLM.ProbitLink)
+    T,K = size(mX)::Tuple{Int64,Int64}
+    vFore = zeros(T)
+    for j = iStart:T-h
+        mX_n = view(mX,1:j,1:K)
+        vY_n = view(vY,(1:j))
+        t = size(vY_n,1)
+        mXX_n = hcat(ones(t-h,1), mX_n[1:t-h,1:K])
+        vYY_n = vY_n[h+1:t]
+        md = GLM.fit(GLM.GeneralizedLinearModel,mXX_n,vYY_n,Binomial())
+        iXX_n = hcat(ones(1,1), view(mX_n,t:t,1:K))
+        vFore[j+h] = first(GLM.predict(md,iXX_n))
+    end
+    return vFore
+end
+
 mae(vX::Vector,vY::Vector) = mean(abs.(vX-vY))
 rmse(vX::Vector,vY::Array) = sqrt(mean((vX-vY).^2))
 
@@ -156,6 +172,24 @@ function out_of_sample_forecast_pca(mX::Array{Float64,2},vY::Vector,iStart::Int6
         vYY_n = vY_n[h+1:t]
         mXX_n = hcat(ones(t-h,1), mX_n[1:t-h,vVar_idx], mPC[1:t-h,1:1])
         md = GLM.lm(mXX_n,vYY_n)
+        iXX_n = hcat(ones(1,1), view(mX_n,t:t,1:K), view(mPC,t:t,1:1))
+        vFore[j+h] = first(GLM.predict(md,iXX_n))
+    end
+    return vFore
+end
+ 
+function out_of_sample_forecast_pca(mX::Array{Float64,2},vY::Vector,iStart::Int64,h::Int64,vVar_idx::Vector{Int64},rPC_idx::UnitRange{Int64},l::GLM.ProbitLink)
+    T,k = size(mX)::Tuple{Int64,Int64}
+    K = size(vVar_idx,1)
+    vFore = zeros(T)
+    for j = iStart:T-h
+        mX_n = view(mX,1:j,1:k)
+        vY_n = view(vY,(1:j))
+        mPC = pca(mX_n[:,rPC_idx])
+        t = size(vY_n,1)
+        vYY_n = vY_n[h+1:t]
+        mXX_n = hcat(ones(t-h,1), mX_n[1:t-h,vVar_idx], mPC[1:t-h,1:1])
+        md = GLM.fit(GLM.GeneralizedLinearModel,mXX_n,vYY_n,Binomial(),l)
         iXX_n = hcat(ones(1,1), view(mX_n,t:t,1:K), view(mPC,t:t,1:1))
         vFore[j+h] = first(GLM.predict(md,iXX_n))
     end
@@ -332,6 +366,122 @@ function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
 
             plot!(l_plot, dta, mFore[iStart+h:end,count], line = (line_st[best_comb]),
             title = "Horizon $h", subplot = count, legend = false, ylabel = string(iSymbol))
+        end
+    end
+    r = results(U,best_comb_vMae,factor_in_vMae,best_comb_vRmse,factor_in_vRmse)
+    return l_plot,r
+end
+
+function check_binary(vY::Array)
+    T = size(vY,1)
+    if sum(isequal.(vY,0) .| isequal.(vY,1)) != T
+        error("The dependent variable must be binary")
+    end
+end
+
+
+function sforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H::Vector,iStart::Int64,iBest::Int64,ncomb_load::Int64,l::GLM.ProbitLink)
+    l_plot = plot(layout = grid(length(H),1))
+    rm_var = size(vSymbol,1)
+
+    mX,vY,U,vNames = variable_selection(dfData,vSymbol,iSymbol,H,iStart,iBest)
+    check_binary(vY::Array)
+    best_comb_vMae,factor_in_vMae = load_score("vMae",ncomb_load,H,U.vNames)
+    best_comb_vRmse,factor_in_vRmse = load_score("vRmse",ncomb_load,H,U.vNames)
+
+    line_st = Dict(best_comb_vMae => (:solid,"green",2), best_comb_vRmse => (:dash, "red",2))
+    counter = 0
+    for best_comb = (best_comb_vMae, best_comb_vRmse)
+        counter += 1
+        if best_comb == best_comb_vMae
+            factor_in = factor_in_vMae
+        else best_comb == best_comb_vRmse
+            factor_in = factor_in_vRmse
+        end
+        model_index = Array{Vector}(size(best_comb,1))
+        variables = Array{Vector}(size(best_comb,1))
+        mFore    = zeros(size(vY,1),size(H,1))
+        count = 0
+        for i = 1:size(best_comb,1)
+            comb_index = collect(combinations(1:size(U.vNames,1), parse(Int64,best_comb[i,2])))
+            comb_index = transpose(hcat(comb_index...))
+            if @> sum(collect(string(best_comb[i,1])) .== '_') == 0
+                model_index[i] = comb_index[parse(Int64,split(string(best_comb[i,1]),"x")[2]),:]
+                variables[i] = U.vNames[comb_index[parse(Int64,split(string(best_comb[i,1]),"x")[2]),:]]
+            else
+                model_index[i] = comb_index[parse(Int64,split(string(best_comb[i,1]),r"x|_")[2]),:]
+                variables[i] = U.vNames[comb_index[parse(Int64,split(string(best_comb[i,1]),r"x|_")[2]),:]]
+            end
+            model_index[i] = map(x-> find(x .== map(string,names(dfData)))[1],variables[i])-rm_var
+            println("Starting models with $(variables[i]) variables and factor $(Bool(factor_in[i]))")
+            h = H[i]
+            count += 1
+            if factor_in[i] == 1 # test if best use factors
+                @inbounds mFore[:,count] = out_of_sample_forecast_pca(mX,vY,iStart,h,model_index[i],1:size(mX,2),l::GLM.ProbitLink)
+            else
+                @inbounds mFore[:,count] = out_of_sample_forecast(mX[:,model_index[i]],vY,iStart,h,l::GLM.ProbitLink)
+            end
+            dta = convert(Array{String, 1}, dfData[:Date][iStart+h:end])
+            best_comb == best_comb_vMae && bar!(l_plot,dta,vY[iStart+h:end], fill = (0,"lightgray"), linecolor = "lightgrey", 
+            yaxis = false, legend = false, subplot = count, yticks = false, ylabel = "percentage %")
+            plot!(l_plot, dta, mFore[iStart+h:end,count], line = (line_st[best_comb]),
+            title = "Horizon $h", subplot = count, legend = false, ylabel = string(iSymbol))
+        end
+    end
+    r = results(U,best_comb_vMae,factor_in_vMae,best_comb_vRmse,factor_in_vRmse)
+    return l_plot,r
+end
+
+function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H::Vector,iStart::Int64,iBest::Int64,ncomb_load::Int64,l::GLM.ProbitLink)
+    l_plot = plot(layout = grid(length(H),1))
+    rm_var = size(vSymbol,1)
+
+    mX,vNames = get_independent(dfData,vSymbol)
+    vY = convert(Array{Float64,1}, dfData[iSymbol])
+    check_binary(vY::Array)
+    U = UnivariateSelection(mX,vY,vNames,H,iStart,iBest)
+
+    best_comb_vMae,factor_in_vMae = load_score("vMae",ncomb_load,H,U.vNames)
+    best_comb_vRmse,factor_in_vRmse = load_score("vRmse",ncomb_load,H,U.vNames)
+
+    line_st = Dict(best_comb_vMae => (:solid,"green",2), best_comb_vRmse => (:dash, "red",2))
+    counter = 0
+    for best_comb = (best_comb_vMae, best_comb_vRmse)
+        counter += 1
+        if best_comb == best_comb_vMae
+            factor_in = factor_in_vMae
+        else best_comb == best_comb_vRmse
+            factor_in = factor_in_vRmse
+        end
+        model_index = Array{Vector}(size(best_comb,1))
+        variables = Array{Vector}(size(best_comb,1))
+        mFore    = zeros(size(vY,1),size(H,1))
+        count = 0
+        for i = 1:size(best_comb,1)
+            comb_index = collect(combinations(1:size(U.vNames,1), parse(Int64,best_comb[i,2])))
+            comb_index = transpose(hcat(comb_index...))
+            if @> sum(collect(string(best_comb[i,1])) .== '_') == 0
+                model_index[i] = comb_index[parse(Int64,split(string(best_comb[i,1]),"x")[2]),:]
+                variables[i] = U.vNames[comb_index[parse(Int64,split(string(best_comb[i,1]),"x")[2]),:]]
+            else
+                model_index[i] = comb_index[parse(Int64,split(string(best_comb[i,1]),r"x|_")[2]),:]
+                variables[i] = U.vNames[comb_index[parse(Int64,split(string(best_comb[i,1]),r"x|_")[2]),:]]
+            end
+            model_index[i] = map(x-> find(x .== map(string,names(dfData)))[1],variables[i])-rm_var
+            println("Starting models with $(variables[i]) variables and factor $(Bool(factor_in[i]))")
+            h = H[i]
+            count += 1
+            if factor_in[i] == 1 # test if best use factors
+                @inbounds mFore[:,count] = out_of_sample_forecast_pca(mX,vY,iStart,h,model_index[i],1:size(mX,2),l)
+            else
+                @inbounds mFore[:,count] = out_of_sample_forecast(mX[:,model_index[i]],vY,iStart,h,l)
+            end
+            dta = convert(Array{String, 1}, dfData[:Date][iStart+h:end])
+            best_comb == best_comb_vMae && bar!(l_plot,dta,vY[iStart+h:end], fill = (0,"lightgray"), linecolor = "lightgrey", 
+            yaxis = true, legend = false, subplot = count, yticks = true, ylabel = "percentage %")
+
+            plot!(l_plot, dta, mFore[iStart+h:end,count], line = (line_st[best_comb]),
+            title = "Horizon $h", subplot = count, legend = false, ylabel = string(iSymbol), xticks = )
         end
     end
     r = results(U,best_comb_vMae,factor_in_vMae,best_comb_vRmse,factor_in_vRmse)

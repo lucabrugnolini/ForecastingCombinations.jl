@@ -6,9 +6,12 @@ Forecasting using a parallel combinatoric approach.
 Pkg.clone("https://github.com/lucabrugnolini/NFP.jl")
 ```
 
+## Documentation
+The procedure is described in (https://lucabrugnolini.github.io/publication/forecasting_inflation.pdf "Brugnolini L. (2018)")
+
 
 ## Introduction
-Given a (balaanced) dataset of _K_ macroeconomic variables, the objective is to select the best model to predict future values of a target variable. The selection procedure consists in (i) select the best _iBest_ variables according to several out-of-sample criteria and then use these variables in models that use their combination. More specifically:
+Given a (balanced) dataset of _K_ macroeconomic variables, the objective is to select the best model to predict future values of a target variable. The selection procedure consists in (i) select the best _iBest_ variables according to several out-of-sample criteria and then use these variables in models that use their combination. More specifically:
 
 1. the procedure selects the best `iBest` variables using two different criteria (mean absolute error and root mean squared error). This selection step is univariate, i.e. the variables are chosen by running a simple regression of the target variable on each variable of the dataset. 
 
@@ -17,7 +20,7 @@ Given a (balaanced) dataset of _K_ macroeconomic variables, the objective is to 
 The complexity is _O((T-Ts)*2^iBest)_ where _T_ is the sample size, _Ts_ is the number of observation in the initial estimation window. 
 
 ## Example
-Forecasting US non-farm-payroll one and two months ahead `H = [1,2]` using a dataset containing 116 US variables taken from McCracken and Ng (2015). `iBest` is set to 16. The code below is an example of parallelization on `N_CORE`. 
+Forecasting US non-farm-payroll one and two months ahead `H = [1,2]` using a dataset containing 116 US variables taken from (https://amstat.tandfonline.com/doi/abs/10.1080/07350015.2015.1086655 "McCracken and Ng (2015)"). `iBest` is set to 16. The code below is an example of parallelization on `N_CORE`. 
 
 
 ```julia
@@ -48,12 +51,21 @@ rmprocs(2:N_CORE)
 
 ```
 
+In case one is interested in predicting probabilities, as the US probability of recession, simply include a link function in `sforecast` or `fforecast`, and use a binary variable as dependent variable.
 
+```julia
+@everywhere const l = ProbitLink() # link function for probability model
+l_plot,r = sforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load,l)
+l_plot,r= fforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load,l)
+```
 _Note:_ Since `readtable` is deprecated in Julia v0.6, it is advisable to start julia's REPL using the --depwarn=no flag
 
 ```bash
 > julia --depwarn=no
 ```
 
+## References
+Brugnolini L. (2018) "Forecasting Deflation Probability in the EA: A Combinatoric Approach." _Central Bank of Malta Working Paper_, 01/18.
+McCracken, Michael W., and Serena Ng.(2016) "FRED-MD: A monthly database for macroeconomic research." Journal of Business & Economic Statistics 34.4:574-589.
 
 

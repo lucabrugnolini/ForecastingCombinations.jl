@@ -1,5 +1,5 @@
 addprocs(3)
-@everywhere using NFP, DataFrames
+@everywhere using NFP, DataFrames, GLM
 @everywhere const sStart_s = "01/01/15" # start out of sample
 @everywhere const iSymbol = :NFP # dependent variable
 @everywhere const vSymbol = [:Date, :NFP, :NFP_bb_median] # remove from dataset (non-numerical and dep. var.)
@@ -10,10 +10,11 @@ addprocs(3)
 @everywhere dfData = readtable(joinpath(Pkg.dir("NFP"),"test","data.csv"), header = true)
 @everywhere const iStart = find(dfData[:Date] .== sStart_s)[1]
 
-l_plot,r = sforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load)
-l_plot,r= fforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load)
+# For NFP level forecast
+l_plot,r = sforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load,l)
+l_plot,r= fforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load,l)
 
-# See the forecasts
+# See the forecasts plot
 l_plot
 
 rmprocs(2:4)
