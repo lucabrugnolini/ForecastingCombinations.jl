@@ -481,7 +481,7 @@ function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
             yaxis = true, legend = false, subplot = count, yticks = true, ylabel = "percentage %")
 
             plot!(l_plot, dta, mFore[iStart+h:end,count], line = (line_st[best_comb]),
-            title = "Horizon $h", subplot = count, legend = false, ylabel = string(iSymbol), xticks = )
+            title = "Horizon $h", subplot = count, legend = false, ylabel = string(iSymbol))
         end
     end
     r = results(U,best_comb_vMae,factor_in_vMae,best_comb_vRmse,factor_in_vRmse)
@@ -495,7 +495,6 @@ type results
     best_comb_vRmse::Array
     factor_in_vRmse::Array
 end
-
 
 export sforecast, fforecast
 
