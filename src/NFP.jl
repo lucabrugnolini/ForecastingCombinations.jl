@@ -42,7 +42,49 @@ function UnivariateSelection(mX::Array,vY::Vector,vNames,H::Vector{Int64},iStart
     return UnivariateSelection(vBest,vBest_names,s)
 end
 
+function UnivariateSelection(mX::Array,vY::Vector,vNames,H::Vector{Int64},iStart::Int64,iBest::Int64,l::GLM.ProbitLink)
+    mFore,mMae,mRmse = get_score(mX,vY,H,iStart,l)
+    mMAE  = get_variable_idx(mMae::Array,false)
+    mRMSE = get_variable_idx(mRmse::Array,false)
+
+    mMAE_b = Loss(mMAE,mMae,iBest,vNames)
+    mRMSE_b = Loss(mRMSE,mRmse,iBest,vNames)
+
+    s = Score(mMAE_b,mRMSE_b)
+
+    vBest = get_best(mMAE_b.mVar,mRMSE_b.mVar,iBest)
+    vBest_names = vNames[vBest]
+
+    return UnivariateSelection(vBest,vBest_names,s)
+end
+
 function get_score(mX::Array{Float64,2},vY::Vector,H::Vector{Int64},iStart::Int64)
+    T,K = size(mX)::Tuple{Int64,Int64}
+    P = size(H,1)
+    # Out of sample
+    mFore = zeros(T,P,K)
+    mMae  = zeros(P,K)
+    mRmse = zeros(P,K)
+    @simd for j = 1:K
+        println(j)
+        mFore_s   = zeros(T,P)
+        vMae  = zeros(P)
+        vRmse = zeros(P)
+        count = 0
+        for h = H
+            count = count+1
+            mFore_s[:,count] = out_of_sample_forecast(mX[:,j:j],vY,iStart,h)
+            vMae[count]    = mae(mFore_s[iStart+h:end,count],vY[iStart+h:end])
+            vRmse[count]   = rmse(mFore_s[iStart+h:end,count],vY[iStart+h:end])
+        end
+        mFore[:,:,j] = mFore_s
+        mMae[:,j]    = vMae
+        mRmse[:,j]   = vRmse
+    end
+    return mFore,mMae, mRmse
+end
+
+function get_score(mX::Array{Float64,2},vY::Vector,H::Vector{Int64},iStart::Int64,l::GLM.ProbitLink)
     T,K = size(mX)::Tuple{Int64,Int64}
     P = size(H,1)
     # Out of sample
@@ -259,6 +301,16 @@ function variable_selection(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::
     mX,vNames = get_independent(dfData,vSymbol)
     vY = convert(Array{Float64, 1},dfData[iSymbol])
     U = UnivariateSelection(mX,vY,vNames,H,iStart,iBest)
+    const ncomb = size(U.vVar,1)
+    # sPath folder is the folder where the results are saved and has to be created
+    par_get_best_comb(mX,vY,H,U,iStart)
+    return mX,vY,U,vNames
+end
+
+function variable_selection(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H::Vector,iStart::Int64,iBest::Int64,l::GLM.ProbitLink)
+    mX,vNames = get_independent(dfData,vSymbol)
+    vY = convert(Array{Float64, 1},dfData[iSymbol])
+    U = UnivariateSelection(mX,vY,vNames,H,iStart,iBest,l)
     const ncomb = size(U.vVar,1)
     # sPath folder is the folder where the results are saved and has to be created
     par_get_best_comb(mX,vY,H,U,iStart)
