@@ -17,7 +17,7 @@ addprocs(3)
 
 # For NFP level forecast
 l_plot,r = sforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load,fLoss)
-l_plot,r= fforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load,fLoss)
+l_plot,r= fforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load,l,fLoss)
 
 # See the forecasts plot
 l_plot

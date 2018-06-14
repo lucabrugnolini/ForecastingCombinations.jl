@@ -56,6 +56,8 @@ rmprocs(2:N_CORE)
 
 ```
 
+![Alt Text](/home/lbrugnol/recesion.png)
+
 In case one is interested in predicting probabilities, as the US probability of recession, simply include a link function in `sforecast` or `fforecast`, and use a binary variable as dependent variable.
 
 ```julia
