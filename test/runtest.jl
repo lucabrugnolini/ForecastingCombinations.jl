@@ -16,8 +16,8 @@ addprocs(3)
 @everywhere const iStart = find(dfData[:Date] .== sStart_s)[1]
 
 # For NFP level forecast
-l_plot,r = sforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load,l)
-l_plot,r= fforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load,l)
+l_plot,r = sforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load,fLoss)
+l_plot,r= fforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load,fLoss)
 
 # See the forecasts plot
 l_plot

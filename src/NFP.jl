@@ -1,4 +1,4 @@
-module NFPs
+module NFP
 using CSV, GLM, StatsBase, DataFrames,MultivariateStats
 using Combinatorics, Parameters, DataFramesMeta, Lazy, Plots
 
