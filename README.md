@@ -56,7 +56,7 @@ rmprocs(2:N_CORE)
 
 ```
 
-![alt text](/home/lbrugnol/Dropbox/my_code/NFP.jl/test/nfp.png)
+![alt text](https://raw.githubusercontent.com/lucabrugnolini/NFP.jl/loss_function_implementation/test/nfp.png)
 
 In case one is interested in predicting probabilities, as the US probability of recession, simply include a link function in `sforecast` or `fforecast`, and use a binary variable as dependent variable.
 
@@ -68,7 +68,7 @@ l_plot,r = sforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load,l,fLoss)
 ## `fforecast` uses results previously stored with `sforecast`
 l_plot,r = fforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load,l,fLoss)
 ```
-![alt text](/home/lbrugnol/Dropbox/my_code/NFP.jl/test/recession.png)
+![alt text](https://raw.githubusercontent.com/lucabrugnolini/NFP.jl/loss_function_implementation/test/recession.png)
 
 ## References
 Brugnolini L. (2018) "Forecasting Deflation Probability in the EA: A Combinatoric Approach." _Central Bank of Malta Working Paper_, 01/2018.
