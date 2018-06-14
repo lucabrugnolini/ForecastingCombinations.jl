@@ -13,7 +13,7 @@ The procedure is described in [Brugnolini L. (2018)](https://lucabrugnolini.gith
 ## Introduction
 Given a (balanced) dataset of _K_ macroeconomic variables, the objective is to select the best model to predict future values of a target variable. The selection procedure consists in (i) select the best _iBest_ variables according to several out-of-sample criteria and then use these variables in models that use their combination. More specifically:
 
-1. the procedure selects the best `iBest` variables using two different criteria (mean absolute error and root mean squared error). This selection step is univariate, i.e. the variables are chosen by running a simple regression of the target variable on each variable of the dataset. 
+1. the procedure selects the best `iBest` variables using two different criteria (mean absolute error (MAE) and root mean squared error (RMSE) included in the model as a vector of functions). This selection step is univariate, i.e. the variables are chosen by running a simple out-of-sample regression of the target variable on each variable of the dataset. 
 
 2. the `iBest` variables are combined into set of _2, 3, ..., iBest_ variables. For each of these sets, the model is estimated and then avaluated out-of-sample. The best model is the one with the lowest out-of-sample `MSE`. We also augment each model with the first principal component of all variable in the dataset. Thus, there are a total of _2 (2^iBest)_ models. 
 

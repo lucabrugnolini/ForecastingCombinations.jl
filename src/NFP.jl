@@ -1,5 +1,5 @@
-module NFP
-using GLM, StatsBase, DataFrames,MultivariateStats
+@everywhere module NFPs
+using CSV, GLM, StatsBase, DataFrames,MultivariateStats
 using Combinatorics, Parameters, DataFramesMeta, Lazy, Plots
 
 struct Loss
@@ -38,7 +38,7 @@ function UnivariateSelection(mX::Array,vY::Vector,vNames,H::Vector{Int64},iStart
     mLossScore_b = [Loss(get_variable_idx(mLossScore[:,:,f]::Array,false),mLossScore[:,:,f],iBest,vNames) for f = 1:F]
     s = Score(mLossScore_b)
 
-    vBest = get_best(mLossScore_b,iBest)
+    vBest = get_best(mLossScore_b,iBest,fLoss)
     vBest_names = vNames[vBest]
 
     return UnivariateSelection(vBest,vBest_names,s)
@@ -51,13 +51,13 @@ function UnivariateSelection(mX::Array,vY::Vector,vNames,H::Vector{Int64},iStart
     mLossScore_b = [Loss(get_variable_idx(mLossScore[:,:,f]::Array,false),mLossScore[:,:,f],iBest,vNames) for f = 1:F]
     s = Score(mLossScore_b)
 
-    vBest = get_best(mLossScore_b,iBest)
+    vBest = get_best(mLossScore_b,iBest,fLoss)
     vBest_names = vNames[vBest]
 
     return UnivariateSelection(vBest,vBest_names,s)
 end
 
-function get_best(mLossScore_b::Array{Loss},iBest::Int64)
+function get_best(mLossScore_b::Array{Loss},iBest::Int64,fLoss::Array{Function})
     F = length(fLoss)
     vBest = unique(sort(vcat([unique(mLossScore_b[f].mVar) for f = 1:F]...)))
 end
@@ -180,7 +180,7 @@ function par_get_best_comb(mX::Array,vY::Vector,H::Vector{Int64},U::UnivariateSe
         for f = 1:F
         dfLossScore = get_df_score([mLossScore[:,:,f] mLossScore[:,:,f]], n) 
         filename = joinpath(Pkg.dir("NFP"),"test","$(string(fLoss[f]))_best_$(size(U.vVar,1))_comb_$comb.csv")
-        writetable(filename,dfLossScore , separator = ',', header = true)
+        CSV.write(filename,dfLossScore, header = true)
         end
     end
 end
@@ -217,7 +217,7 @@ function par_get_best_comb(mX::Array,vY::Vector,H::Vector{Int64},U::UnivariateSe
         for f = 1:F
         dfLossScore = get_df_score([mLossScore[:,:,f] mLossScore[:,:,f]], n) 
         filename = joinpath(Pkg.dir("NFP"),"test","$(string(fLoss[f]))_best_$(size(U.vVar,1))_comb_$comb.csv")
-        writetable(filename,dfLossScore , separator = ',', header = true)
+        CSV.write(filename,dfLossScore, header = true)
         end
     end
 end
@@ -225,7 +225,7 @@ end
 function get_df_score(m::DenseArray,n::Int64)
     mm = convert(Array,m)::Array
     dfM =  DataFrame(mm)
-    names!(dfM,repmat(map(Symbol,1:n),2),allow_duplicates = true)
+    names!(dfM,repmat(map(Symbol,1:n),2),makeunique = true)
     return dfM
 end
 
@@ -282,7 +282,7 @@ end
 function get_df_score(m::DenseArray,n::Int64)
     mm = convert(Array,m)::Array
     dfM =  DataFrame(mm)
-    names!(dfM,repmat(map(Symbol,1:n),2),allow_duplicates = true)
+    names!(dfM,repmat(map(Symbol,1:n),2),makeunique = true)
     return dfM
 end
 
@@ -317,7 +317,7 @@ function load_score(sCrit::String,ncomb_load::Int64,H::Vector,vNames::Vector{Str
     for comb = 1:ncomb_load
         comb_index = collect(combinations(1:size(vNames,1), comb))
         comb_index = transpose(hcat(comb_index...))
-        dfCrit = readtable(joinpath(Pkg.dir("NFP"),"test","$(sCrit)_best_$(ncomb)_comb_$comb.csv"), header =  true)
+        dfCrit = CSV.read(joinpath(Pkg.dir("NFP"),"test","$(sCrit)_best_$(ncomb)_comb_$comb.csv"), header =  true)
         comb_identifier = @>> map(string,names(dfCrit)).*"_comb$comb" vcat(comb_identifier)
         vCrit = @>> convert(Array,dfCrit) hcat(vCrit)
         println(size(vCrit))
@@ -381,11 +381,11 @@ function sforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
             comb_index = collect(combinations(1:size(U.vNames,1), parse(Int64,best_comb[i,2])))
             comb_index = transpose(hcat(comb_index...))
             if @> sum(collect(string(best_comb[i,1])) .== '_') == 0
-                model_index[i] = comb_index[parse(Int64,split(string(best_comb[i,1]),"x")[2]),:]
-                variables[i] = U.vNames[comb_index[parse(Int64,split(string(best_comb[i,1]),"x")[2]),:]]
+                model_index[i] = comb_index[parse(Int64,string(best_comb[i,1])),:]
+                variables[i] = U.vNames[comb_index[parse(Int64,string(best_comb[i,1])),:]]
             else
-                model_index[i] = comb_index[parse(Int64,split(string(best_comb[i,1]),r"x|_")[2]),:]
-                variables[i] = U.vNames[comb_index[parse(Int64,split(string(best_comb[i,1]),r"x|_")[2]),:]]
+                model_index[i] = comb_index[parse(Int64,string(best_comb[i,1])),:]
+                variables[i] = U.vNames[comb_index[parse(Int64,string(best_comb[i,1])),:]]
             end
             model_index[i] = map(x-> find(x .== map(string,names(dfData)))[1],variables[i])-rm_var
             println("Starting models with $(variables[i]) variables and factor $(Bool(factor_in[i]))")
@@ -432,11 +432,11 @@ function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
             comb_index = collect(combinations(1:size(U.vNames,1), parse(Int64,best_comb[i,2])))
             comb_index = transpose(hcat(comb_index...))
             if @> sum(collect(string(best_comb[i,1])) .== '_') == 0
-                model_index[i] = comb_index[parse(Int64,split(string(best_comb[i,1]),"x")[2]),:]
-                variables[i] = U.vNames[comb_index[parse(Int64,split(string(best_comb[i,1]),"x")[2]),:]]
+                model_index[i] = comb_index[parse(Int64,string(best_comb[i,1])),:]
+                variables[i] = U.vNames[comb_index[parse(Int64,string(best_comb[i,1])),:]]
             else
-                model_index[i] = comb_index[parse(Int64,split(string(best_comb[i,1]),r"x|_")[2]),:]
-                variables[i] = U.vNames[comb_index[parse(Int64,split(string(best_comb[i,1]),r"x|_")[2]),:]]
+                model_index[i] = comb_index[parse(Int64,string(best_comb[i,1])),:]
+                variables[i] = U.vNames[comb_index[parse(Int64,string(best_comb[i,1])),:]]
             end
             model_index[i] = map(x-> find(x .== map(string,names(dfData)))[1],variables[i])-rm_var
             println("Starting models with $(variables[i]) variables and factor $(Bool(factor_in[i]))")
@@ -482,11 +482,11 @@ function sforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
             comb_index = collect(combinations(1:size(U.vNames,1), parse(Int64,best_comb[i,2])))
             comb_index = transpose(hcat(comb_index...))
             if @> sum(collect(string(best_comb[i,1])) .== '_') == 0
-                model_index[i] = comb_index[parse(Int64,split(string(best_comb[i,1]),"x")[2]),:]
-                variables[i] = U.vNames[comb_index[parse(Int64,split(string(best_comb[i,1]),"x")[2]),:]]
+                model_index[i] = comb_index[parse(Int64,string(best_comb[i,1])),:]
+                variables[i] = U.vNames[comb_index[parse(Int64,string(best_comb[i,1])),:]]
             else
-                model_index[i] = comb_index[parse(Int64,split(string(best_comb[i,1]),r"x|_")[2]),:]
-                variables[i] = U.vNames[comb_index[parse(Int64,split(string(best_comb[i,1]),r"x|_")[2]),:]]
+                model_index[i] = comb_index[parse(Int64,string(best_comb[i,1])),:]
+                variables[i] = U.vNames[comb_index[parse(Int64,string(best_comb[i,1])),:]]
             end
             model_index[i] = map(x-> find(x .== map(string,names(dfData)))[1],variables[i])-rm_var
             println("Starting models with $(variables[i]) variables and factor $(Bool(factor_in[i]))")
@@ -533,11 +533,11 @@ function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
             comb_index = collect(combinations(1:size(U.vNames,1), parse(Int64,best_comb[i,2])))
             comb_index = transpose(hcat(comb_index...))
             if @> sum(collect(string(best_comb[i,1])) .== '_') == 0
-                model_index[i] = comb_index[parse(Int64,split(string(best_comb[i,1]),"x")[2]),:]
-                variables[i] = U.vNames[comb_index[parse(Int64,split(string(best_comb[i,1]),"x")[2]),:]]
+                model_index[i] = comb_index[parse(Int64,string(best_comb[i,1])),:]
+                variables[i] = U.vNames[comb_index[parse(Int64,string(best_comb[i,1])),:]]
             else
-                model_index[i] = comb_index[parse(Int64,split(string(best_comb[i,1]),r"x|_")[2]),:]
-                variables[i] = U.vNames[comb_index[parse(Int64,split(string(best_comb[i,1]),r"x|_")[2]),:]]
+                model_index[i] = comb_index[parse(Int64,string(best_comb[i,1])),:]
+                variables[i] = U.vNames[comb_index[parse(Int64,string(best_comb[i,1])),:]]
             end
             model_index[i] = map(x-> find(x .== map(string,names(dfData)))[1],variables[i])-rm_var
             println("Starting models with $(variables[i]) variables and factor $(Bool(factor_in[i]))")
