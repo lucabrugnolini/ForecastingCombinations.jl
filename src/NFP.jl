@@ -396,8 +396,8 @@ function sforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
                 @inbounds mFore[:,count] = out_of_sample_forecast(mX[:,model_index[i]],vY,iStart,h)
             end
             dta = convert(Array{String, 1}, dfData[:Date][iStart+h:end])
-            f == 1 && bar!(l_plot,dta,vY[iStart+h:end], fill = (0,"lightgray"), linecolor = "lightgrey", 
-            yaxis = false, legend = false, subplot = count, yticks = false, ylabel = "percentage %")
+            f == 1 && plot!(l_plot,dta,vY[iStart+h:end], linecolor = "black", 
+            yaxis = true, legend = false, subplot = count, yticks = true, ylabel = "percentage %")
             plot!(l_plot, dta, mFore[iStart+h:end,count],
             title = "Horizon $h", subplot = count, legend = false, ylabel = string(iSymbol))
         end
@@ -446,8 +446,8 @@ function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
                 @inbounds mFore[:,count] = out_of_sample_forecast(mX[:,model_index[i]],vY,iStart,h)
             end
             dta = convert(Array{String, 1}, dfData[:Date][iStart+h:end])
-            f == 1 && bar!(l_plot,dta,vY[iStart+h:end], fill = (0,"lightgray"), linecolor = "lightgrey", 
-            yaxis = false, legend = false, subplot = count, yticks = false, ylabel = "percentage %")
+            f == 1 && plot!(l_plot,dta,vY[iStart+h:end], linecolor = "black", 
+            yaxis = true, legend = false, subplot = count, yticks = true, ylabel = "percentage %")
             plot!(l_plot, dta, mFore[iStart+h:end,count],
             title = "Horizon $h", subplot = count, legend = false, ylabel = string(iSymbol))
         end
