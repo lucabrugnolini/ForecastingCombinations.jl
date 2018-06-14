@@ -365,7 +365,6 @@ function sforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
     l_plot = plot(layout = grid(length(H),1))
     rm_var = size(vSymbol,1)
     mX,vY,U,vNames = variable_selection(dfData,vSymbol,iSymbol,H,iStart,iBest,fLoss)
-    check_binary(vY::Array)
     #line_st = Dict(best_comb_vMae => (:solid,"green",2), best_comb_vRmse => (:dash, "red",2))
     counter = 0
     Factor_in = zeros(Int64, iH,F)
@@ -416,7 +415,6 @@ function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
     rm_var = size(vSymbol,1)
     mX,vNames = get_independent(dfData,vSymbol)
     vY = convert(Array{Float64,1}, dfData[iSymbol])
-    check_binary(vY::Array)
     U = UnivariateSelection(mX,vY,vNames,H,iStart,iBest,fLoss)
     counter = 0
     Factor_in = zeros(Int64, iH,F)
