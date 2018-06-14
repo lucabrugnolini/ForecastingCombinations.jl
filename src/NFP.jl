@@ -1,4 +1,4 @@
-@everywhere module NFPs
+module NFPs
 using CSV, GLM, StatsBase, DataFrames,MultivariateStats
 using Combinatorics, Parameters, DataFramesMeta, Lazy, Plots
 
