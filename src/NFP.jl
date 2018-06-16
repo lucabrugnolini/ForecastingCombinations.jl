@@ -317,7 +317,7 @@ function load_score(sCrit::String,ncomb_load::Int64,H::Vector,vNames::Vector{Str
     for comb = 1:ncomb_load
         comb_index = collect(combinations(1:size(vNames,1), comb))
         comb_index = transpose(hcat(comb_index...))
-        dfCrit = CSV.read(joinpath(Pkg.dir("NFP"),"test","$(sCrit)_best_$(ncomb)_comb_$comb.csv"), header =  true)
+        dfCrit = readtable(joinpath(Pkg.dir("NFP"),"test","$(sCrit)_best_$(ncomb)_comb_$comb.csv"), header =  true)
         comb_identifier = @>> map(string,names(dfCrit)).*"_comb$comb" vcat(comb_identifier)
         vCrit = @>> convert(Array,dfCrit) hcat(vCrit)
         println(size(vCrit))
