@@ -1,5 +1,5 @@
 addprocs(3)
-@everywhere using NFP, DataFrames, GLM, CSV
+@everywhere using NFP, DataFrames
 @everywhere const sStart_s = "01/01/15" # start out of sample
 @everywhere const iSymbol = :NFP # dependent variable
 @everywhere const vSymbol = [:Date, :NFP, :NFP_bb_median] # remove from dataset (non-numerical and dep. var.)
@@ -12,12 +12,12 @@ addprocs(3)
 
 @everywhere const fLoss = [mae rmse] ## Vector of loss functions 
 
-@everywhere dfData = CSV.read(joinpath(Pkg.dir("NFP"),"test","data.csv"), header = true)
+@everywhere dfData = readtable(joinpath(Pkg.dir("NFP"),"test","data.csv"), header = true)
 @everywhere const iStart = find(dfData[:Date] .== sStart_s)[1]
 
 # For NFP level forecast
 l_plot,r = sforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load,fLoss)
-l_plot,r= fforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load,l,fLoss)
+l_plot,r= fforecast(dfData,vSymbol,iSymbol,H,iStart,iBest,ncomb_load,fLoss)
 
 # See the forecasts plot
 l_plot
