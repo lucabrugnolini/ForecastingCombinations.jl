@@ -1,5 +1,5 @@
 module NFP
-using GLM, StatsBase, DataFrames, MultivariateStats
+using GLM, StatsBase, DataFrames, MultivariateStats, CSV
 using Combinatorics, Parameters, DataFramesMeta, Lazy, Plots
 
 struct Loss
@@ -302,7 +302,7 @@ function get_dependent(vY::Vector,fThreshold::Float64)
     T = size(vY,1)
     vY_prob = zeros(Int64,T)
     for i = 1:T
-        vY < fThreshold ? (vY_prob[i] = 1) : (vY_prob[i] = 0)
+        vY[i] < fThreshold ? (vY_prob[i] = 1) : (vY_prob[i] = 0)
     end
     return vY_prob
 end
@@ -401,7 +401,7 @@ function sforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
             else
                 @inbounds mFore[:,count] = out_of_sample_forecast(mX[:,model_index[i]],vY,iStart,h)
             end
-            dta = convert(Array{String, 1}, dfData[:Date][iStart+h:end])
+            dta = Dates.format(dfData[:date][iStart+h:end], "yyyy-mm-dd")
             f == 1 && plot!(l_plot,dta,vY[iStart+h:end], linecolor = "black", 
             yaxis = true, legend = false, subplot = count, yticks = true, ylabel = "percentage %")
             plot!(l_plot, dta, mFore[iStart+h:end,count],
@@ -411,12 +411,12 @@ function sforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
         Factor_in[:,f] = factor_in
     end
     r = Results(U,Best_comb,Factor_in)
-    writetable(joinpath(Pkg.dir("NFP"),"test","best_univariate_names.csv"), DataFrame(r.U.vNames), header = false)
+    CSV.write(joinpath(Pkg.dir("NFP"),"test","best_univariate_names.csv"), DataFrame(names = r.U.vNames), header = false)
     return l_plot,r
 end
 
 function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H::Vector,iStart::Int64,iBest::Int64,ncomb_load::Int64,fLoss::Array{Function})
-    vNames = readtable(joinpath(Pkg.dir("NFP"),"test","best_univariate_names.csv"))
+    vNames = readtable(joinpath(Pkg.dir("NFP"),"test","best_univariate_names.csv"), header = false)
     vNames = string.(vNames[1])
     F = length(fLoss)
     iH = length(H) 
@@ -454,7 +454,7 @@ function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
             else
                 @inbounds mFore[:,count] = out_of_sample_forecast(mX[:,model_index[i]],vY,iStart,h)
             end
-            dta = convert(Array{String, 1}, dfData[:Date][iStart+h:end])
+            dta = Dates.format(dfData[:date][iStart+h:end], "yyyy-mm-dd")
             f == 1 && plot!(l_plot,dta,vY[iStart+h:end], linecolor = "black", 
             yaxis = true, legend = false, subplot = count, yticks = true, ylabel = "percentage %")
             plot!(l_plot, dta, mFore[iStart+h:end,count],
@@ -504,7 +504,7 @@ function sforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
             else
                 @inbounds mFore[:,count] = out_of_sample_forecast(mX[:,model_index[i]],vY,iStart,h,l::GLM.ProbitLink)
             end
-            dta = convert(Array{String, 1}, dfData[:Date][iStart+h:end])
+            dta = Dates.format(dfData[:date][iStart+h:end], "yyyy-mm-dd")
             f == 1 && bar!(l_plot,dta,vY[iStart+h:end], fill = (0,"lightgray"), linecolor = "lightgrey", 
             yaxis = false, legend = false, subplot = count, yticks = false, ylabel = "percentage %")
             plot!(l_plot, dta, mFore[iStart+h:end,count],
@@ -514,12 +514,12 @@ function sforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
         Factor_in[:,f] = factor_in
     end
     r = Results(U,Best_comb,Factor_in)
-    writetable(joinpath(Pkg.dir("NFP"),"test","best_univariate_names.csv"), DataFrame(names = r.U.vNames), header = true)
+    CSV.write(joinpath(Pkg.dir("NFP"),"test","best_univariate_names.csv"), DataFrame(names = r.U.vNames), header = false)
     return l_plot,r
 end
 
 function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H::Vector,iStart::Int64,iBest::Int64,ncomb_load::Int64,l::GLM.ProbitLink,fLoss::Array{Function})
-    vNames = readtable(joinpath(Pkg.dir("NFP"),"test","best_univariate_names.csv"))
+    vNames = readtable(joinpath(Pkg.dir("NFP"),"test","best_univariate_names.csv"), header = false)
     vNames = string.(vNames[1])
     F = length(fLoss)
     iH = length(H) 
@@ -558,7 +558,7 @@ function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
             else
                 @inbounds mFore[:,count] = out_of_sample_forecast(mX[:,model_index[i]],vY,iStart,h,l::GLM.ProbitLink)
             end
-            dta = convert(Array{String, 1}, dfData[:Date][iStart+h:end])
+            dta = Dates.format(dfData[:date][iStart+h:end], "yyyy-mm-dd")
             f == 1 && bar!(l_plot,dta,vY[iStart+h:end], fill = (0,"lightgray"), linecolor = "lightgrey", 
             yaxis = false, legend = false, subplot = count, yticks = false, ylabel = "percentage %")
             plot!(l_plot, dta, mFore[iStart+h:end,count],
@@ -967,7 +967,7 @@ function sforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
             else
                 @inbounds mFore[:,count] = out_of_sample_forecast(mX[:,model_index[i]],vY,iStart,h)
             end
-            dta = convert(Array{String, 1}, dfData[:Date][iStart+h:end])
+            dta = Dates.format(dfData[:date][iStart+h:end], "yyyy-mm-dd")
             f == 1 && plot!(l_plot,dta,vY[iStart+h:end], linecolor = "black", 
             yaxis = true, legend = false, subplot = count, yticks = true, ylabel = "percentage %")
             plot!(l_plot, dta, mFore[iStart+h:end,count],
@@ -977,12 +977,12 @@ function sforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
         Factor_in[:,f] = factor_in
     end
     r = Results(U,Best_comb,Factor_in)
-    writetable(joinpath(Pkg.dir("NFP"),"test","best_univariate_names.csv"), DataFrame(names = r.U.vNames), header = true)
+    CSV.write(joinpath(Pkg.dir("NFP"),"test","best_univariate_names.csv"), DataFrame(names = r.U.vNames), header = false)
     return l_plot,r
 end
 
 function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H::Vector,iStart::Int64,iBest::Int64,ncomb_load::Int64,fLoss::Array{Function})
-    vNames = readtable(joinpath(Pkg.dir("NFP"),"test","best_univariate_names.csv"))
+    vNames = readtable(joinpath(Pkg.dir("NFP"),"test","best_univariate_names.csv"), header = false)
     vNames = string.(vNames[1])
     F = length(fLoss)
     iH = length(H) 
@@ -1020,7 +1020,7 @@ function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
             else
                 @inbounds mFore[:,count] = out_of_sample_forecast(mX[:,model_index[i]],vY,iStart,h)
             end
-            dta = convert(Array{String, 1}, dfData[:Date][iStart+h:end])
+            dta = Dates.format(dfData[:date][iStart+h:end], "yyyy-mm-dd")
             f == 1 && plot!(l_plot,dta,vY[iStart+h:end], linecolor = "black", 
             yaxis = true, legend = false, subplot = count, yticks = true, ylabel = "percentage %")
             plot!(l_plot, dta, mFore[iStart+h:end,count],
@@ -1070,7 +1070,7 @@ function sforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
             else
                 @inbounds mFore[:,count] = out_of_sample_forecast(mX[:,model_index[i]],vY,iStart,h,l::GLM.ProbitLink)
             end
-            dta = convert(Array{String, 1}, dfData[:Date][iStart+h:end])
+            dta = Dates.format(dfData[:date][iStart+h:end], "yyyy-mm-dd")
             f == 1 && bar!(l_plot,dta,vY[iStart+h:end], fill = (0,"lightgray"), linecolor = "lightgrey", 
             yaxis = false, legend = false, subplot = count, yticks = false, ylabel = "percentage %")
             plot!(l_plot, dta, mFore[iStart+h:end,count],
@@ -1080,12 +1080,12 @@ function sforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
         Factor_in[:,f] = factor_in
     end
     r = Results(U,Best_comb,Factor_in)
-    writetable(joinpath(Pkg.dir("NFP"),"test","best_univariate_names.csv"), DataFrame(names = r.U.vNames), header = true)
+    CSV.write(joinpath(Pkg.dir("NFP"),"test","best_univariate_names.csv"), DataFrame(names = r.U.vNames), header = false)
     return l_plot,r
 end
 
 function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H::Vector,iStart::Int64,iBest::Int64,ncomb_load::Int64,l::GLM.ProbitLink,fLoss::Array{Function})
-    vNames = readtable(joinpath(Pkg.dir("NFP"),"test","best_univariate_names.csv"))
+    vNames = readtable(joinpath(Pkg.dir("NFP"),"test","best_univariate_names.csv"), header = false)
     vNames = string.(vNames[1])
     F = length(fLoss)
     iH = length(H) 
@@ -1124,7 +1124,7 @@ function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
             else
                 @inbounds mFore[:,count] = out_of_sample_forecast(mX[:,model_index[i]],vY,iStart,h,l::GLM.ProbitLink)
             end
-            dta = convert(Array{String, 1}, dfData[:Date][iStart+h:end])
+            dta = Dates.format(dfData[:date][iStart+h:end], "yyyy-mm-dd")
             f == 1 && bar!(l_plot,dta,vY[iStart+h:end], fill = (0,"lightgray"), linecolor = "lightgrey", 
             yaxis = false, legend = false, subplot = count, yticks = false, ylabel = "percentage %")
             plot!(l_plot, dta, mFore[iStart+h:end,count],
