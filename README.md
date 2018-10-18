@@ -7,7 +7,7 @@ Pkg.clone("https://github.com/lucabrugnolini/NFP.jl")
 ```
 
 ## Documentation
-The procedure is described in [Brugnolini L. (2018)](https://lucabrugnolini.github.io/publication/forecasting_inflation.pdf). The application in the paper is on predicting the probability of having inflation around the European Central Bank's target. 
+The procedure is described in [Brugnolini L. (2018)](https://lucabrugnolini.github.io/publication/forecasting_deflation_probability.pdf). The application in the paper is on predicting the probability of having inflation around the European Central Bank's target. 
 
 
 ## Introduction
