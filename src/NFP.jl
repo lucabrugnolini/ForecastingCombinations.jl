@@ -1,6 +1,7 @@
 module NFP
 using GLM, StatsBase, DataFrames, MultivariateStats, CSV
 using Combinatorics, Parameters, DataFramesMeta, Lazy, Plots
+pyplot()
 
 struct Loss
     mVar::Array{Int64}
@@ -35,6 +36,7 @@ struct Results_f
     U::Array{String}
     Best_comb
     Factor_in
+    m3dFore
 end
 
 function UnivariateSelection(mX::Array,vY::Vector,vNames,H::Vector{Int64},iStart::Int64,iBest::Int64,fLoss::Array{Function})
@@ -986,7 +988,7 @@ function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
     vNames = string.(vNames[1])
     F = length(fLoss)
     iH = length(H) 
-    l_plot = plot(layout = grid(length(H),1));
+    l_plot = plot(layout = grid(iH,1));
     rm_var = size(vSymbol,1)
     mX, vNames_full = get_independent(dfData,vSymbol)
     vY = convert(Array{Float64,1}, dfData[iSymbol])
@@ -994,6 +996,7 @@ function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
     counter = 0
     Factor_in = zeros(Int64, iH,F)
     Best_comb = Array{Array}(F,1)
+    m3dFore =  zeros(size(vY,1),size(H,1),F)
     for f = 1:F
         counter += 1
         best_comb,factor_in = load_score(string(fLoss[f]),ncomb_load,H,vNames)
@@ -1029,7 +1032,7 @@ function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
         Best_comb[f] = best_comb
         Factor_in[:,f] = factor_in
     end
-    r = Results_f(vNames,Best_comb,Factor_in)
+    r = Results_f(vNames,Best_comb,Factor_in,m3dFore)
     return l_plot,r
 end
 
@@ -1076,6 +1079,7 @@ function sforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
             plot!(l_plot, dta, mFore[iStart+h:end,count],
             title = "Horizon $h", subplot = count, legend = false, ylabel = string(iSymbol))
         end
+        m3dFore[:,:,f] = mFore
         Best_comb[f] = best_comb
         Factor_in[:,f] = factor_in
     end
@@ -1089,7 +1093,7 @@ function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
     vNames = string.(vNames[1])
     F = length(fLoss)
     iH = length(H) 
-    l_plot = plot(layout = grid(length(H),1))
+    l_plot = plot(layout = grid(iH,1))
     rm_var = size(vSymbol,1)
     mX, vNames_full = get_independent(dfData,vSymbol)
     vY = convert(Array{Float64,1}, dfData[iSymbol])
@@ -1098,6 +1102,7 @@ function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
     counter = 0
     Factor_in = zeros(Int64, iH,F)
     Best_comb = Array{Array}(F,1)
+    m3dFore =  zeros(size(vY,1),size(H,1),F)
     for f = 1:F
         counter += 1
         best_comb,factor_in = load_score(string(fLoss[f]),ncomb_load,H,vNames)
@@ -1130,10 +1135,11 @@ function fforecast(dfData::DataFrame,vSymbol::Array{Symbol,1},iSymbol::Symbol,H:
             plot!(l_plot, dta, mFore[iStart+h:end,count],
             title = "Horizon $h", subplot = count, legend = false, ylabel = string(iSymbol))
         end
+        m3dFore[:,:,f] = mFore
         Best_comb[f] = best_comb
         Factor_in[:,f] = factor_in
     end
-    r = Results_f(vNames,Best_comb,Factor_in)
+    r = Results_f(vNames,Best_comb,Factor_in,m3dFore)
     return l_plot,r
 end
 
