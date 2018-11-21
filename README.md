@@ -1,9 +1,9 @@
-# NFP.jl
+# ForecastingCombinations.jl
 Forecasting using a parallel combinatoric approach.
 
 ## Installation
 ```julia
-Pkg.clone("https://github.com/lucabrugnolini/NFP.jl")
+Pkg.clone("https://github.com/lucabrugnolini/ForecastingCombinations.jl")
 ```
 
 ## Documentation
@@ -25,7 +25,7 @@ Forecasting US non-farm-payroll one and two months ahead `H = [1,2]` using a dat
 
 ```julia
 addprocs(N_CORE)
-@everywhere using NFP
+@everywhere using ForecastingCombinations
 @everywhere using CSV, DataFrames, GLM
 
 @everywhere mae(vX::Vector,vY::Vector) = mean(abs.(vX-vY))      ## MAE loss function 
